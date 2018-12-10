@@ -80,17 +80,17 @@ def readCsv(filename):
     path = filename
     file = open(path, newline="")
     reader = csv.reader(file)
-    header = next(reader) #first line is assummed to be header
+    header = next(reader)  # first line is assummed to be header
 
     sailorsPerformance = {}
     for row in reader:
-        #row name, mean performance, std dev (standerd deviation)
+        # row name, mean performance, std dev (standerd deviation)
         name = row[0]
         meanPerformance = float(row[1])
         stdDev = float(row[2])
         sailorsPerformance[name] = (meanPerformance, stdDev)
-    
-    return sailorsPerformance 
+
+    return sailorsPerformance
 
 #(d)
 
@@ -110,7 +110,7 @@ def generatePerformances(sailorPerformance):
         print(meandev)
         PerformanceVal[key] = random.normalvariate(meandev[0], meandev[1])
 
-    return PerformanceVal 
+    return PerformanceVal
 
 #(e)
 
@@ -118,7 +118,7 @@ def generatePerformances(sailorPerformance):
 def sailorPosition(PerformanceVal):
     '''sailors postions returns and odered list of keys
      from generatePerformances
-     sailorPosition({"salior1":[performanceVal], "salior2":performanceVal},...)''' 
+     sailorPosition({"salior1":[performanceVal], "salior2":performanceVal},...)'''
     Positions = sorted(
         PerformanceVal, key=lambda val: PerformanceVal[val], reverse=False)
     return Positions
@@ -126,7 +126,11 @@ def sailorPosition(PerformanceVal):
 #(f)
 
 
-def runRace(results):
+def calculateFinishingOrder(results):
+    '''Run race takes a tuple of saliors name
+    and an empty list each call adds a race
+    result to the list
+    >>>runRace(("sailor'sname",[]))'''
     used = []
 
     for key in results:
@@ -140,14 +144,15 @@ def runRace(results):
 
 
 def main():
-    results = dict([('Alice', []), ('Bob', []), ('Clare', []), ('Dennis', []), ('Eva', [])])
+    results = dict([('Alice', []), ('Bob', []), ('Clare', []),
+                    ('Dennis', []), ('Eva', [])])
 
     # runs 5 races
-    for x in range(0, 6):
-        results = runRace(results)
-
+    for races in range(0, 6):
+        results = calculateFinishingOrder(results)
+    #prints results of races 
     print(results)
-        
+
     for key in results:
         results[key] = seriesScore((key, results[key]))
 
@@ -155,7 +160,6 @@ def main():
     results = sailorPosition(results)
 
     print(results)
-
 
 
 main()
