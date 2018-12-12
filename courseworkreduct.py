@@ -1,52 +1,38 @@
-
-"""
-Ensure (a) is correct
->>> seriesScore(("bob", [2, 4, 1, 1, 2, 5]))
-10
->>> seriesScore(("bill", [1, 3, 1, 4, 2, 4]))
-11
-Ensure (b) is correct
->>> ascSailors([  1, 1, 1]), ('Clare', [2, 3, 2, 2, 4, 2]), ('Bob', [3, 1, 5, 3, 2, 5]), ('Dennis', [5, 4, 4, 4, 3, 4]), ('Eva', [4, 5, 3, 5, 5, 3])]
-Ensure (c) is correct
->>> ReadCSV("sailors.csv")
-OrderedDict([('Alice', (100.0, 0.0)), ('Bob', (100.0, 5.0)), ('Clare', (100.0, 10.0)), ('Dennis', (90.0, 0.0)), ('Eva', (90.0, 5.0))])
-Ensure (d) is correct
->>> rndPerformance(ReadCSV("sailors.csv"))
-OrderedDict([('Alice', 100.0), ('Bob', 105.76045089520113), ('Clare', 108.36452152548142), ('Dennis', 90.0), ('Eva', 96.10844089749128)])
-Ensure (e) is correct
->>> sailorPosition(rndPerformance(ReadCSV("sailors.csv")))
-['Clare', 'Bob', 'Alice', 'Eva', 'Dennis']
-"""
-import collections
 import random
 import csv
-# mport opperator
+from operator import itemgetter
+numberOfraces = 6
 
-#(a)
+'''(a)'''
 
 
-def seriesScore(sailor):
-    '''function to return sum of a sailors 
+def seriesScore(sailor, removeScores=1):
+    '''function to return sum of a sailors
     scores with worsed score ommited.
-    function takes a tuble of a salior's name and scores
-    >>>seriesScore(("Sailor's name",[list scores]))'''
+    function takes a tuple of a salior's name and scores
+    >>>seriesScore(("Sailor's name",[list scores]), remove sores)'''
 
     scores = sailor[1]
-    # takes the list of scores out the tuble
+    # takes the list of scores out the tuple
     scores = sorted(scores, reverse=False)
     # sorts in decending order
-    scores.pop()
+    if removeScores == 1:
+        scores.pop()
+        del scores[0]
     # remove worst score
-    return (sum(scores))
+        return (sum(scores))
+    else:
+        removeScores = len(scores) - removeScores
+        return(sum(scores[0:removeScores]))
 
 
-#(b)
+'''(b)'''
 
 
 def sortSeries(sailors):
     '''function to spor a complete series of races in decending order
     (winner first looser last).
-    take a single list of tubles of sailors scores.
+    take a single list of tuples of sailors scores.
     [("sailor1",[list of scores]), ("sailor2",[listofScores])]
     >>>sortSeries([list of all saliors])'''
 
@@ -69,12 +55,13 @@ def sortSeries(sailors):
         # once recursion is complete, return the sorted list
         return (smaller + [sailors[pivot]] + bigger)
 
-#(c)
+
+'''(c)'''
 
 
 def readCsv(filename):
     '''ReadCSV takes a file path as a string "/filepath/fileName.csv"
-        and returns an odered Dictionary of saliors 
+        and returns an odered Dictionary of saliors
         name:(performace and standerd deviation)
         >>>readCsv("/filepath/fileName.csv")'''
     path = filename
@@ -92,74 +79,81 @@ def readCsv(filename):
 
     return sailorsPerformance
 
-#(d)
+
+'''(d)'''
 
 
 def generatePerformances(sailorPerformance):
-    '''function to generate random performance value based on 
-    mean performance and standerd deviation
+    '''function to generate random performance value
+    based on mean performance and standerd deviation
     takes dictionary returned from readCSV
     >>>generatePerformances({sailor1:[meanPerfromance, stdDeviation],
     sailor2:[meanPerfromance, stdDeviation]},...)'''
-    random.seed()
+    # random.seed()
 
     # Define an ordered dictionary to input the data into
     PerformanceVal = {}
     for key in sailorPerformance:  # go through each key
         meandev = sailorPerformance[key]  # take out the tuple
-        print(meandev)
         PerformanceVal[key] = random.normalvariate(meandev[0], meandev[1])
 
     return PerformanceVal
 
-#(e)
+
+'''(e)'''
 
 
-def sailorPosition(PerformanceVal):
+def calculateFinishingOrder(PerformanceVal):
     '''sailors postions returns and odered list of keys
      from generatePerformances
-     sailorPosition({"salior1":[performanceVal], "salior2":performanceVal},...)'''
+     >>>sailorPosition({"salior1":[performanceVal],
+     "salior2":performanceVal})'''
     Positions = sorted(
-        PerformanceVal, key=lambda val: PerformanceVal[val], reverse=False)
+        PerformanceVal, key=lambda val: PerformanceVal[val], reverse=True)
     return Positions
 
-#(f)
 
-
-def calculateFinishingOrder(results):
-    '''Run race takes a tuple of saliors name
-    and an empty list each call adds a race
-    result to the list
-    >>>runRace(("sailor'sname",[]))'''
-    used = []
-
-    for key in results:
-        rndNum = random.randrange(1, 6, 1)
-        while rndNum in used:
-            rndNum = random.randrange(1, 6, 1)
-
-        results[key].append(rndNum)
-        used.append(rndNum)
-    return results
+'''(f)'''
 
 
 def main():
-    results = dict([('Alice', []), ('Bob', []), ('Clare', []),
-                    ('Dennis', []), ('Eva', [])])
 
-    # runs 5 races
-    for races in range(0, 6):
-        results = calculateFinishingOrder(results)
-    #prints results of races 
-    print(results)
-
-    for key in results:
-        results[key] = seriesScore((key, results[key]))
-
-    print(results)
-    results = sailorPosition(results)
+    sailors = readCsv("results.csv")
+    results = {}
+    for name in sailors:
+        results[name] = []
 
     print(results)
 
+    for i in range(numberOfraces):
+        simulation = generatePerformances(sailors)
+        pos = calculateFinishingOrder(simulation)
 
-main()
+        for score, name in enumerate(pos, start=1):
+            results[name].append(score)
+
+    print()
+    print(results)
+    print("")
+    series = sortSeries(list(results.items()))
+    for i in series:
+        print(series.index(i) + 1, i[0], i[1])
+
+    scores = []
+
+    for sailorsscore in (list(results.items())):
+        scores.append(list((sailorsscore[0], seriesScore(sailorsscore))))
+
+    scores = sorted(scores, key=itemgetter(1))
+    print("\t" + ("_" * (len("Series Ranking by score") + 4)))
+    print()
+    print("\t~ Series Ranking by score ~")
+    print("\t" + ("_" * (len("Series Ranking by score") + 4)))
+    print()
+    for i in scores:
+        print("\t{:>2}{:>10}{:>10}".format(scores.index(i) + 1, i[0], i[1]))
+
+
+if __name__ == '__main__': main()
+
+
